@@ -157,7 +157,6 @@ Step 5 : ENTRYPOINT /gopath/bin/app
 Successfully built 532abd0000aa
 
 ᐅ  docker tag 532abd0000aa localhost:5000/hello/1
-thrawn➜ docker:‹192.168.99.100:2376›  ~/dev/minikube-tutorial/sample_app_hello
 
 ᐅ  docker push localhost:5000/hello/1
 The push refers to a repository [localhost:5000/hello/1]
@@ -176,3 +175,4 @@ OK so now you should be able to deploy it!
 
 ### links
 - https://mtpereira.com/local-development-k8s.html
+- https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/registry

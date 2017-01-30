@@ -1,0 +1,10 @@
+---
+
+# Use something like this to create namespaces
+# alternatively: kubectl create ns foobar
+apiVersion: v1
+kind: Namespace
+metadata:
+    name: foobar
+
+
