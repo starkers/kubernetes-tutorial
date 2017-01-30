@@ -88,5 +88,91 @@ kubernetes-dashboard-b4rzn    1/1       Running   1          88d
 
 
 
+# getting the service from k8s to your localhost
+
+
+get a list of services in kube-system:
+```
+ᐅ  kubectl get svc --namespace=kube-system
+NAME                   CLUSTER-IP   EXTERNAL-IP   PORT(S)         AGE
+kube-dns               10.0.0.10    <none>        53/UDP,53/TCP   88d
+kube-registry          10.0.0.122   <none>        5000/TCP        25m
+kubernetes-dashboard   10.0.0.228   <nodes>       80:30000/TCP    88d
+```
+
+Lets see the the ports and details on the registry:
+```
+kubectl describe svc/kube-registry --namespace=kube-system
+Name:     kube-registry
+Namespace:    kube-system
+Labels:     k8s-app=kube-registry
+      kubernetes.io/name=KubeRegistry
+      Selector:   k8s-app=kube-registry
+      Type:     ClusterIP
+      IP:     10.0.0.122
+      Port:     registry  5000/TCP
+      Endpoints:    172.17.0.7:5000
+      Session Affinity: None
+      No events.
+```
+
+We can "port-forward" :5000 using kubectl.. then you will have a docker registry running localy on :5000
+
+
+```
+POD=$(kubectl get pods --namespace kube-system -l k8s-app=kube-registry \
+      -o template --template '{{range .items}}{{.metadata.name}} {{.status.phase}}{{"\n"}}{{end}}' \
+      | grep Running | head -1 | cut -f1 -d' ')
+kubectl port-forward --namespace kube-system $POD 5000:5000 &
+```
+
+verify its up:
+
+```
+curl localhost:5000
+Handling connection for 5000
+```
+
+# lets tag something and push it
+
+```
+ᐅ  cd sample_app_hello
+
+ᐅ  docker build .
+Sending build context to Docker daemon 3.072 kB
+Step 1 : FROM caarlos0/alpine-go
+ ---> 3c5fe9414eed
+Step 2 : WORKDIR /gopath/src/app
+ ---> Using cache
+ ---> 3e4821d29fa7
+Step 3 : ADD . /gopath/src/app/
+ ---> Using cache
+ ---> cbd27bb09b2e
+Step 4 : RUN go get -v app
+ ---> Using cache
+ ---> 8f70b96bac7f
+Step 5 : ENTRYPOINT /gopath/bin/app
+ ---> Using cache
+ ---> 532abd0000aa
+Successfully built 532abd0000aa
+
+ᐅ  docker tag 532abd0000aa localhost:5000/hello/1
+thrawn➜ docker:‹192.168.99.100:2376›  ~/dev/minikube-tutorial/sample_app_hello
+
+ᐅ  docker push localhost:5000/hello/1
+The push refers to a repository [localhost:5000/hello/1]
+bb810286635f: Mounted from hello/three 
+8184b846aefd: Mounted from hello/three 
+51a8a83b9792: Mounted from hello/three 
+5f70bf18a086: Mounted from hello/three 
+c954c0da97ee: Mounted from hello/three 
+745737c319fa: Mounted from hello/three 
+latest: digest: sha256:2052725c4f72a37fb3c4b43ae0e88b7a537f37041e2bdcdf7eb3271bdfbcb1b2 size: 2395
+```
+
+OK so now you should be able to deploy it!
+
+
+
 ### links
 - https://mtpereira.com/local-development-k8s.html
